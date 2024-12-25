@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+// Dashboard.jsx
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,

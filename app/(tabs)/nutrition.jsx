@@ -1,4 +1,4 @@
-// App.tsx
+// Nutrition.jsx
 import React, { useState } from "react";
 import {
   View,
@@ -11,36 +11,26 @@ import { Picker } from "@react-native-picker/picker";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 
-interface Food {
-  id: string;
-  name: string;
-  calories: number;
-}
-
-interface AggregatedFood extends Food {
-  count: number;
-}
-
-const App: React.FC = () => {
-  const [foodList, setFoodList] = useState<Food[]>([
+const App = () => {
+  const [foodList, setFoodList] = useState([
     { id: "1", name: "Apple", calories: 95 },
     { id: "2", name: "Banana", calories: 105 },
     { id: "3", name: "Egg", calories: 78 },
     { id: "4", name: "Toast", calories: 75 },
   ]);
-  const [addedFood, setAddedFood] = useState<Record<string, AggregatedFood[]>>({
+  const [addedFood, setAddedFood] = useState({
     Breakfast: [],
     Lunch: [],
     Dinner: [],
     Snacks: [],
   });
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [filteredFoodList, setFilteredFoodList] = useState<Food[]>([]);
-  const [dropdownVisible, setDropdownVisible] = useState<boolean>(false);
-  const [selectedMeal, setSelectedMeal] = useState<string>("Breakfast");
-  const [quantity, setQuantity] = useState<number>(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredFoodList, setFilteredFoodList] = useState([]);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [selectedMeal, setSelectedMeal] = useState("Breakfast");
+  const [quantity, setQuantity] = useState(1);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = (query) => {
     setSearchQuery(query);
     if (query) {
       setFilteredFoodList(
@@ -54,7 +44,7 @@ const App: React.FC = () => {
     }
   };
 
-  const addToMeal = (food: Food) => {
+  const addToMeal = (food) => {
     setAddedFood((prev) => {
       const mealFoods = prev[selectedMeal];
       const existingFoodIndex = mealFoods.findIndex(
@@ -75,13 +65,13 @@ const App: React.FC = () => {
     setQuantity(1); // Reset quantity after adding
   };
 
-  const calculateTotalCalories = (): number => {
+  const calculateTotalCalories = () => {
     return Object.values(addedFood)
       .flat()
       .reduce((total, food) => total + food.calories * food.count, 0);
   };
 
-  const calculateMealCalories = (meal: string): number => {
+  const calculateMealCalories = (meal) => {
     return addedFood[meal].reduce(
       (total, food) => total + food.calories * food.count,
       0
