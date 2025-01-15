@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,9 +6,22 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import * as Font from "expo-font";
 import { Picker } from "@react-native-picker/picker";
 
 const App = () => {
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadFonts = async () => {
+      await Font.loadAsync({
+        Poppins: require("@/assets/fonts/Poppins.ttf"),
+      });
+      setFontsLoaded(true);
+    };
+    loadFonts();
+  }, []);
+
   const [foodList, setFoodList] = useState([
     { id: "1", name: "Apple", calories: 95 },
     { id: "2", name: "Banana", calories: 105 },
@@ -151,11 +164,12 @@ const styles = StyleSheet.create({
   container: {
     fontFamily: "Poppins",
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#1B1A1C",
     padding: 24,
     alignItems: "center",
   },
   header: {
+    fontFamily: "Poppins",
     fontSize: 28,
     fontWeight: "700",
     color: "#333333",
@@ -199,9 +213,10 @@ const styles = StyleSheet.create({
     borderBottomColor: "#e0e0e0",
   },
   totalCalories: {
+    fontFamily: "Poppins",
     marginBottom: 20,
     fontSize: 24,
-    fontWeight: "600",
+    fontWeight: "900",
     color: "#333333",
   },
   section: {
@@ -222,22 +237,26 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   label: {
+    fontFamily: "Poppins",
     fontSize: 18,
     fontWeight: "600",
     color: "#333333",
   },
   calorieCount: {
+    fontFamily: "Poppins",
     fontSize: 16,
     fontWeight: "500",
     color: "#555555",
   },
   value: {
+    fontFamily: "Poppins",
     fontSize: 16,
     fontWeight: "400",
     color: "#555555",
     marginTop: 4,
   },
   foodText: {
+    fontFamily: "Poppins",
     fontSize: 16,
     fontWeight: "500",
     color: "#333333",
