@@ -9,20 +9,24 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
-  navigation,
 } from "react-native";
 import * as Font from "expo-font";
+import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import CalorieTracker from "@/app/caloriecircle.jsx";
 import CalorieBurntTracker from "@/app/calorieburnt.jsx";
 
 const SCREEN_WIDTH = Dimensions.get("window").height;
 const SECTIONWIDTH = SCREEN_WIDTH * 0.44;
+const SMALLSECWIDTH = SCREEN_WIDTH * 0.22;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SECTIONHEIGHT = SCREEN_HEIGHT * 0.2;
+const SMALLSECHEIGHT = SCREEN_HEIGHT * 0.2;
 
-const Dashboard = ({ navigation }) => {
+const Dashboard = () => {
+  const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [hasNotification, setHasNotification] = useState(false);
 
   useEffect(() => {
     const loadFonts = async () => {
@@ -32,36 +36,18 @@ const Dashboard = ({ navigation }) => {
       setFontsLoaded(true);
     };
     loadFonts();
+    const notificationReceived = true;
+    setHasNotification(notificationReceived);
   }, []);
 
   if (!fontsLoaded) {
     return null; // Render nothing until fonts are loaded
   }
 
-  const foodItems = [
-    { id: "1", name: "Apple" },
-    { id: "2", name: "Banana" },
-    { id: "3", name: "Chicken Breast" },
-    { id: "4", name: "Salmon" },
-    { id: "5", name: "Broccoli" },
-  ];
-
-  const handleFocus = () => {
-    setDropdownVisible(true);
-  };
-
-  const handleBlur = () => {
-    setTimeout(() => setDropdownVisible(false), 100);
-  };
-
-  const handleNavigate = (screen) => {
-    navigation.navigate(screen);
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.alignflex}>
-        <TouchableOpacity onPress={() => handleNavigate("ProfilePage")}>
+        <TouchableOpacity onPress={() => navigation.navigate("profile")}>
           <Image
             style={styles.profileIcon}
             source={require("@/assets/images/profile-icon-colored.png")}
@@ -71,10 +57,19 @@ const Dashboard = ({ navigation }) => {
           style={styles.headerText}
           source={require("@/assets/images/TrackMyFitnessLogo.png")}
         />
-        <Image
-          style={styles.bellIcon}
-          source={require("@/assets/images/bell-icon.png")}
-        />
+        <TouchableOpacity onPress={() => navigation.navigate("Notifications")}>
+          {hasNotification ? (
+            <Image
+              style={styles.bellIconActive}
+              source={require("@/assets/images/bell-icon-active.png")}
+            />
+          ) : (
+            <Image
+              style={styles.bellIcon}
+              source={require("@/assets/images/bell-icon.png")}
+            />
+          )}
+        </TouchableOpacity>
       </View>
       <View style={styles.forback}>
         <Image
@@ -138,9 +133,41 @@ const Dashboard = ({ navigation }) => {
           <CalorieBurntTracker />
         </View>
       </View>
-      <View style={styles.section}>
-        <Text style={styles.label}>Weight Monitoring:</Text>
-        <Text style={styles.value}>68 kg</Text>
+      <View style={styles.sectionFlex}>
+        <View style={styles.section}>
+          <Image
+            style={styles.weightObj}
+            source={require("@/assets/images/obj1.png")}
+          />
+          <Text style={styles.smallLabelObj}>Weight Monitoring:</Text>
+          <View style={styles.values}>
+            <Text style={styles.label}>Current: </Text>
+            <Text style={styles.value}>60</Text>
+            <Text style={styles.kcal}>kg</Text>
+          </View>
+          <View style={styles.values}>
+            <Text style={styles.label}>Goal: </Text>
+            <Text style={styles.value}>75</Text>
+            <Text style={styles.kcal}>kg</Text>
+          </View>
+        </View>
+        <View style={styles.section}>
+          <Image
+            style={styles.weightObj}
+            source={require("@/assets/images/obj1.png")}
+          />
+          <Text style={styles.smallLabelObj}>Steps Counter:</Text>
+          <View style={styles.values}>
+            <Text style={styles.label}>Current: </Text>
+            <Text style={styles.value}>1000</Text>
+            <Text style={styles.kcal}>steps</Text>
+          </View>
+          <View style={styles.values}>
+            <Text style={styles.label}>Goal: </Text>
+            <Text style={styles.value}>5000</Text>
+            <Text style={styles.kcal}>steps</Text>
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -152,6 +179,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1B1A1C",
     flex: 1,
     padding: 16,
+    paddingTop: 30,
   },
   alignflex: {
     marginTop: 20,
@@ -180,6 +208,11 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     tintColor: "white",
   },
+  bellIconActive: {
+    width: 25,
+    height: 25,
+    alignSelf: "center",
+  },
   bellIcon: {
     width: 25,
     height: 25,
@@ -202,6 +235,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "baseline",
+  },
+  weightObj: {
+    left: -4,
+    width: 215,
+    height: 90,
+    position: "absolute",
   },
   burntobj1: {
     left: -4,
@@ -229,15 +268,20 @@ const styles = StyleSheet.create({
     marginRight: 58,
   },
   section: {
+    display: "flex",
+    flexDirection: "column",
     marginBottom: 24,
-    alignItems: "flex-start",
     backgroundColor: "#1B1A1C",
-    paddingVertical: 20,
-    padding: 16,
+    padding: 10,
     shadowColor: "#1ED760",
-    shadowOffset: { width: 0, height: 0 },
+    shadowOffset: { width: 1, height: 0 },
     shadowOpacity: 100,
     shadowRadius: 20,
+    elevation: 10,
+    height: SMALLSECHEIGHT,
+    width: SMALLSECWIDTH,
+    borderWidth: 0.5,
+    borderColor: "#1B1A1C",
   },
   totalcalories: {
     display: "flex",
@@ -258,7 +302,10 @@ const styles = StyleSheet.create({
   bigsection: {
     margin: 5,
   },
-
+  sectionFlex: {
+    flexDirection: "row",
+    gap: 9,
+  },
   caloriecircle: {
     right: 14,
     padding: 2,
@@ -268,6 +315,12 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     alignItems: "flex-start",
+  },
+  smallLabelObj: {
+    fontFamily: "Poppins",
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#000",
   },
   labelobj: {
     fontFamily: "Poppins",

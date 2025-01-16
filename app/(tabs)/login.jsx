@@ -12,7 +12,7 @@ import logo from "../../assets/images/calories-icon.png";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Formik } from "formik";
 import * as yup from "yup";
-import signup from "../(tabs)/signup.jsx";
+import signup from "../signup.jsx";
 import {
   createStaticNavigation,
   useNavigation,

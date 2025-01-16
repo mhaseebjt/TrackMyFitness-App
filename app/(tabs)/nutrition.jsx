@@ -1,15 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
+  Image,
   TextInput,
+  Button,
+  Modal,
+  FlatList,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
 } from "react-native";
 import * as Font from "expo-font";
+import { useNavigation } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker";
 
 const App = () => {
+  const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
 
   useEffect(() => {
@@ -20,7 +27,13 @@ const App = () => {
       setFontsLoaded(true);
     };
     loadFonts();
+    const notificationReceived = true;
+    setHasNotification(notificationReceived);
   }, []);
+
+  if (!fontsLoaded) {
+    return null; // Render nothing until fonts are loaded
+  }
 
   const [foodList, setFoodList] = useState([
     { id: "1", name: "Apple", calories: 95 },
@@ -37,6 +50,7 @@ const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredFoodList, setFilteredFoodList] = useState([]);
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const cancelHide = useRef(false);
   const [selectedMeal, setSelectedMeal] = useState("Breakfast");
   const [quantity, setQuantity] = useState(1);
 
@@ -73,6 +87,7 @@ const App = () => {
       };
     });
     setQuantity(1); // Reset quantity after adding
+    setDropdownVisible(true);
   };
 
   const calculateTotalCalories = () => {
@@ -89,74 +104,130 @@ const App = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>TrackMyFitness</Text>
-      <Text style={styles.totalCalories}>
-        Total Calories: {calculateTotalCalories()}
-      </Text>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchBar}
-          placeholder="Search for food"
-          placeholderTextColor="#aaa"
-          value={searchQuery}
-          onChangeText={handleSearch}
-          onFocus={() => setDropdownVisible(true)}
-        />
-        {dropdownVisible && (
-          <View style={styles.dropdownContainer}>
-            {filteredFoodList.map((food) => (
-              <View key={food.id} style={styles.dropdownItem}>
-                <Text style={styles.foodText}>
-                  {food.name} - {food.calories} cal
-                </Text>
-                <View style={styles.addSection}>
-                  <TextInput
-                    style={styles.quantityInput}
-                    keyboardType="number-pad"
-                    value={quantity.toString()}
-                    onChangeText={(value) =>
-                      setQuantity(Math.max(1, parseInt(value) || 1))
-                    }
-                  />
-                  <Picker
-                    selectedValue={selectedMeal}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setSelectedMeal(itemValue)}
-                  >
-                    <Picker.Item label="Breakfast" value="Breakfast" />
-                    <Picker.Item label="Lunch" value="Lunch" />
-                    <Picker.Item label="Dinner" value="Dinner" />
-                    <Picker.Item label="Snacks" value="Snacks" />
-                  </Picker>
-                  <TouchableOpacity
-                    style={styles.addButton}
-                    onPress={() => addToMeal(food)}
-                  >
-                    <Text style={styles.addButtonText}>+</Text>
-                  </TouchableOpacity>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        if (dropdownVisible) {
+          setDropdownVisible(false); // Hide the dropdown when user touches outside
+        }
+      }}
+    >
+      <View style={styles.container}>
+        <View style={styles.alignflex}>
+          <TouchableOpacity onPress={() => navigation.navigate("profile")}>
+            <Image
+              style={styles.profileIcon}
+              source={require("@/assets/images/profile-icon-colored.png")}
+            />
+          </TouchableOpacity>
+          <Image
+            style={styles.headerText}
+            source={require("@/assets/images/TrackMyFitnessLogo.png")}
+          />
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Notifications")}
+          >
+            {hasNotification ? (
+              <Image
+                style={styles.bellIconActive}
+                source={require("@/assets/images/bell-icon-active.png")}
+              />
+            ) : (
+              <Image
+                style={styles.bellIcon}
+                source={require("@/assets/images/bell-icon.png")}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.totalCalories}>
+          Total Calories: {calculateTotalCalories()}
+        </Text>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Search for food"
+            placeholderTextColor="#aaa"
+            value={searchQuery}
+            onChangeText={handleSearch}
+            onFocus={() => setDropdownVisible(true)}
+          />
+          {dropdownVisible && (
+            <View style={styles.dropdownContainer}>
+              {filteredFoodList.map((food) => (
+                <View key={food.id} style={styles.dropdownItem}>
+                  <Text style={styles.foodText}>
+                    {food.name} - {food.calories} cal
+                  </Text>
+                  <View style={styles.addSection}>
+                    <TextInput
+                      style={styles.quantityInput}
+                      keyboardType="number-pad"
+                      value={quantity.toString()}
+                      onChangeText={(value) =>
+                        setQuantity(Math.max(0, parseInt(value) || 0))
+                      }
+                    />
+                    <Picker
+                      selectedValue={selectedMeal}
+                      style={styles.picker}
+                      onValueChange={(itemValue) => setSelectedMeal(itemValue)}
+                    >
+                      <Picker.Item label="Breakfast" value="Breakfast" />
+                      <Picker.Item label="Lunch" value="Lunch" />
+                      <Picker.Item label="Dinner" value="Dinner" />
+                      <Picker.Item label="Snacks" value="Snacks" />
+                    </Picker>
+                    <TouchableOpacity
+                      style={styles.addButton}
+                      onPress={() => {
+                        addToMeal(food); // Add the food item
+                        cancelHide.current = false; // Reset the cancel flag
+                        setTimeout(() => {
+                          if (!cancelHide.current) {
+                            setDropdownVisible(false); // Hide dropdown if no focus regained
+                          }
+                        }, 1000); // 1-second delay before hiding
+                      }}
+                    >
+                      <Text style={styles.addButtonText}>+</Text>
+                    </TouchableOpacity>
+
+                    {dropdownVisible && (
+                      <TouchableWithoutFeedback
+                        onPress={() => {
+                          cancelHide.current = true; // Prevent dropdown from hiding
+                          setDropdownVisible(true); // Keep dropdown visible
+                        }}
+                      >
+                        <View style={styles.dropdown}></View>
+                      </TouchableWithoutFeedback>
+                    )}
+                  </View>
                 </View>
-              </View>
+              ))}
+            </View>
+          )}
+        </View>
+        {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
+          <View key={meal} style={styles.section}>
+            <View style={styles.mealHeader}>
+              <Text style={styles.label}>{meal}</Text>
+              <Text style={styles.calorieCount}>
+                {calculateMealCalories(meal)} cal
+              </Text>
+            </View>
+            {addedFood[meal].map((food, index) => (
+              <Text key={index} style={styles.value}>
+                {food.name} - {food.calories} cal x {food.count}
+              </Text>
             ))}
           </View>
-        )}
+        ))}
+        <TouchableOpacity
+          onPress={() => setDropdownVisible(false)}
+        ></TouchableOpacity>
       </View>
-      {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
-        <View key={meal} style={styles.section}>
-          <View style={styles.mealHeader}>
-            <Text style={styles.label}>{meal}</Text>
-            <Text style={styles.calorieCount}>
-              {calculateMealCalories(meal)} cal
-            </Text>
-          </View>
-          {addedFood[meal].map((food, index) => (
-            <Text key={index} style={styles.value}>
-              {food.name} - {food.calories} cal x {food.count}
-            </Text>
-          ))}
-        </View>
-      ))}
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -166,6 +237,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#1B1A1C",
     padding: 24,
+    paddingTop: 60,
     alignItems: "center",
   },
   header: {
@@ -175,6 +247,11 @@ const styles = StyleSheet.create({
     color: "#333333",
     textAlign: "center",
     marginBottom: 16,
+  },
+  headerText: {
+    width: 180,
+    height: 20,
+    right: 5,
   },
   searchContainer: {
     width: "100%",

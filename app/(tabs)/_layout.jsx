@@ -25,7 +25,7 @@ export default function TabLayout() {
             position: "absolute",
             backgroundColor: "transparent",
           },
-          default: { backgroundColor: "transparent" },
+          default: {},
         }),
       }}
     >
