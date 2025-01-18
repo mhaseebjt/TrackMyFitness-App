@@ -18,10 +18,6 @@ const loginValidationSchema = yup.object().shape({
     .string()
     .email("Please enter a valid email")
     .required("Email is required"),
-  password: yup
-    .string()
-    .min(6, ({ min }) => `Password must be at least ${min} characters`)
-    .required("Password is required"),
 });
 
 const submit = (values) => {
@@ -29,7 +25,7 @@ const submit = (values) => {
   Alert.alert("Login Successful", `Welcome, ${values.email}`);
 };
 
-export default function Login() {
+export default function ResetPassword() {
   const navigation = useNavigation();
   return (
     <View style={styles.container}>
@@ -65,44 +61,12 @@ export default function Login() {
                 placeholderTextColor="#999"
               />
             </View>
-            {errors.email && touched.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
-            )}
-            <View style={styles.inputContainer}>
-              <Icon name="lock-closed-outline" size={20} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry
-                onChangeText={handleChange("password")}
-                onBlur={handleBlur("password")}
-                value={values.password}
-                placeholderTextColor="#999"
-              />
-            </View>
-            {errors.password && touched.password && (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            )}
-            <TouchableOpacity
-              onPress={() => navigation.navigate("Reset Password")}
-            >
-              <Text style={styles.forgotPassword}>Forgot Password?</Text>
-            </TouchableOpacity>
             <TouchableOpacity
               style={styles.addButton}
-              onPress={handleSubmit}
+              onPress={() => navigation.navigate("Confirmation")}
               disabled={!isValid}
             >
-              <Text style={styles.addButtonText}>Login</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.signUpButton}
-              onPress={() => navigation.navigate("Sign Up")}
-            >
-              <Text style={styles.signUp}>
-                Don't have an account?{" "}
-                <Text style={styles.signUpLink}>Sign Up</Text>
-              </Text>
+              <Text style={styles.addButtonText}>Confirm</Text>
             </TouchableOpacity>
           </>
         )}
@@ -123,8 +87,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 200,
     height: 50,
-    marginTop: 50,
-    marginBottom: 100,
+    marginTop: 10,
+    marginBottom: 50,
   },
   inputContainer: {
     flexDirection: "row",
@@ -161,7 +125,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1ed73c",
     paddingVertical: 8,
     paddingHorizontal: 30,
-    marginTop: 10,
+    marginTop: 50,
     marginBottom: 20,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
