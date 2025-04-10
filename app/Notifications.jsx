@@ -41,7 +41,7 @@ const Notifications = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1B1A1C",
+    backgroundColor: "#2f108f",
     padding: 24,
     alignItems: "center",
     borderRadius: 12,
@@ -61,14 +61,15 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   notificationItem: {
+    borderRadius: 10,
     marginBottom: 24,
     paddingVertical: 20,
     backgroundColor: "#1B1A1C",
-    shadowColor: "#1ED760",
+    shadowColor: "#333",
     shadowOffset: { width: 1, height: 0 },
     shadowOpacity: 100,
-    shadowRadius: 1,
-    elevation: 20,
+    shadowRadius: 20,
+    elevation: 10,
     width: "100%",
   },
   notificationTitle: {

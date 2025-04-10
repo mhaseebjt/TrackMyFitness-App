@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import hasNotification from "@/app/(tabs)/index.jsx";
 import { useNavigation } from "@react-navigation/native";
-
+import { LinearGradient } from "expo-linear-gradient";
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SECTIONWIDTH = SCREEN_WIDTH * 0.44;
 
@@ -60,40 +60,47 @@ const WorkoutPage = () => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.alignflex}>
-          <TouchableOpacity onPress={() => navigation.navigate("profile")}>
+        <LinearGradient
+          colors={["#6a11cb", "#2575fc"]}
+          style={styles.headerGradient}
+        >
+          <View style={styles.alignflex}>
+            <TouchableOpacity onPress={() => navigation.navigate("profile")}>
+              <Image
+                style={styles.profileIcon}
+                source={require("@/assets/images/profile-icon-colored.png")}
+              />
+            </TouchableOpacity>
             <Image
-              style={styles.profileIcon}
-              source={require("@/assets/images/profile-icon-colored.png")}
+              style={styles.headerText}
+              source={require("@/assets/images/TrackMyFitnessLogo.png")}
             />
-          </TouchableOpacity>
-          <Image
-            style={styles.headerText}
-            source={require("@/assets/images/TrackMyFitnessLogo.png")}
-          />
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Notifications")}
-          >
-            {hasNotification ? (
-              <Image
-                style={styles.bellIconActive}
-                source={require("@/assets/images/bell-icon-active.png")}
-              />
-            ) : (
-              <Image
-                style={styles.bellIcon}
-                source={require("@/assets/images/bell-icon.png")}
-              />
-            )}
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Notifications")}
+            >
+              {hasNotification ? (
+                <Image
+                  style={styles.bellIconActive}
+                  source={require("@/assets/images/bell-icon-active.png")}
+                />
+              ) : (
+                <Image
+                  style={styles.bellIcon}
+                  source={require("@/assets/images/bell-icon.png")}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
         <View style={styles.headerWorkout}>
           <Text style={styles.headerWorkoutText}>Workout Options</Text>
-          <TouchableOpacity
-            style={styles.randomButton}
-            onPress={chooseRandomWorkout}
-          >
-            <Text style={styles.randomButtonText}>Random Workout</Text>
+          <TouchableOpacity onPress={chooseRandomWorkout}>
+            <LinearGradient
+              colors={["#6a11cb", "#2575fc"]}
+              style={styles.randomButton}
+            >
+              <Text style={styles.randomButtonText}>Random Workout</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
@@ -128,17 +135,21 @@ const WorkoutPage = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1B1A1C",
+    backgroundColor: "#2f108f",
     padding: 16,
-    paddingTop: 30,
+  },
+  headerGradient: {
+    borderRadius: 10,
+    paddingBottom: 16,
+    marginBottom: 30,
+    marginTop: 25,
   },
   alignflex: {
-    marginTop: 20,
-    padding: 1,
+    paddingHorizontal: 10,
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 25,
+    alignItems: "center",
+    marginTop: 16,
   },
   headerBackground: {
     position: "static",
@@ -154,9 +165,8 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   profileIcon: {
-    width: 45,
-    height: 45,
-    alignSelf: "center",
+    width: 40,
+    height: 40,
     tintColor: "white",
   },
   bellIconActive: {
@@ -167,8 +177,6 @@ const styles = StyleSheet.create({
   bellIcon: {
     width: 25,
     height: 25,
-    alignSelf: "center",
-    tintColor: "white",
   },
   headerLogo: {
     alignItems: "center",
@@ -178,13 +186,10 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   headerText: {
-    justifyContent: "center",
-    fontSize: 24,
-    width: 180,
-    height: 20,
-    right: 5,
-    fontWeight: "700",
-    color: "#fff",
+    width: 150,
+    height: 30,
+    tintColor: "white",
+    right: 2,
   },
   headerWorkout: {
     flexDirection: "row",
@@ -206,10 +211,11 @@ const styles = StyleSheet.create({
   },
   randomButtonText: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#000",
+    fontWeight: "700",
+    color: "#fff",
   },
   selectedWorkout: {
+    borderRadius: 10,
     marginBottom: 16,
     alignItems: "center",
     backgroundColor: "#282828",
@@ -235,12 +241,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   workoutOption: {
+    borderRadius: 10,
     backgroundColor: "#1B1A1C",
     width: SECTIONWIDTH,
     padding: 16,
     alignItems: "center",
     marginBottom: 16,
-    shadowColor: "#1ED760",
+    shadowColor: "#333",
     shadowOffset: { width: 1, height: 0 },
     shadowOpacity: 100,
     shadowRadius: 20,

@@ -12,6 +12,11 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { app } from "@/scripts/firebaseConfig.js"; // Ensure you import your Firebase configuration
+
+const auth = getAuth(app); // Initialize Firebase Auth
 
 const loginValidationSchema = yup.object().shape({
   email: yup
@@ -24,13 +29,24 @@ const loginValidationSchema = yup.object().shape({
     .required("Password is required"),
 });
 
-const submit = (values) => {
-  console.log(values);
-  Alert.alert("Login Successful", `Welcome, ${values.email}`);
-};
-
-export default function Login() {
+const Login = () => {
   const navigation = useNavigation();
+
+  const handleLogin = async (values) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      const user = userCredential.user;
+      Alert.alert("Login Successful", `Welcome back, ${user.email}`);
+      navigation.navigate("profile"); // Redirect to profile screen
+    } catch (error) {
+      Alert.alert("Login Failed", error.message);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Image
@@ -41,7 +57,7 @@ export default function Login() {
       <Formik
         validationSchema={loginValidationSchema}
         initialValues={{ email: "", password: "" }}
-        onSubmit={submit}
+        onSubmit={handleLogin}
       >
         {({
           handleChange,
@@ -68,6 +84,7 @@ export default function Login() {
             {errors.email && touched.email && (
               <Text style={styles.errorText}>{errors.email}</Text>
             )}
+
             <View style={styles.inputContainer}>
               <Icon name="lock-closed-outline" size={20} style={styles.icon} />
               <TextInput
@@ -83,18 +100,22 @@ export default function Login() {
             {errors.password && touched.password && (
               <Text style={styles.errorText}>{errors.password}</Text>
             )}
+
             <TouchableOpacity
               onPress={() => navigation.navigate("Reset Password")}
             >
               <Text style={styles.forgotPassword}>Forgot Password?</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleSubmit}
-              disabled={!isValid}
-            >
-              <Text style={styles.addButtonText}>Login</Text>
+
+            <TouchableOpacity onPress={handleSubmit} disabled={!isValid}>
+              <LinearGradient
+                colors={["#6a11cb", "#2575fc"]}
+                style={styles.addButton}
+              >
+                <Text style={styles.addButtonText}>Login</Text>
+              </LinearGradient>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.signUpButton}
               onPress={() => navigation.navigate("Sign Up")}
@@ -109,12 +130,12 @@ export default function Login() {
       </Formik>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1B1A1C",
+    backgroundColor: "#2f108f",
     padding: 20,
     alignItems: "center",
   },
@@ -125,8 +146,10 @@ const styles = StyleSheet.create({
     height: 50,
     marginTop: 50,
     marginBottom: 100,
+    tintColor: "white",
   },
   inputContainer: {
+    borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
@@ -134,8 +157,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#1B1A1C",
     paddingHorizontal: 12,
     marginBottom: 16,
-    shadowColor: "#1ED760",
-    shadowOffset: { width: 1, height: 1 },
+    shadowColor: "#fff",
+    shadowColor: "#333",
+    shadowOffset: { width: 1, height: 0 },
     shadowOpacity: 100,
     shadowRadius: 20,
     elevation: 10,
@@ -155,21 +179,23 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     marginBottom: 20,
     color: "#a6a6a6",
-    fontWeight: "bold", // Updated to bold style
+    fontWeight: "bold",
   },
   addButton: {
+    borderRadius: 10,
     backgroundColor: "#1ed73c",
-    paddingVertical: 8,
-    paddingHorizontal: 30,
+    paddingVertical: 10,
+    paddingHorizontal: 50,
     marginTop: 10,
     marginBottom: 20,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowColor: "#333",
+    shadowOffset: { width: 1, height: 0 },
+    shadowOpacity: 100,
+    shadowRadius: 20,
+    elevation: 10,
   },
   addButtonText: {
-    color: "#333333",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
@@ -180,7 +206,7 @@ const styles = StyleSheet.create({
   },
   signUpLink: {
     color: "#fff",
-    fontWeight: "bold", // Updated to bold style
+    fontWeight: "bold",
   },
   errorText: {
     color: "red",
@@ -188,3 +214,5 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
+export default Login;

@@ -11,6 +11,7 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import { Formik } from "formik";
 import * as yup from "yup";
+import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 
 const loginValidationSchema = yup.object().shape({
@@ -62,11 +63,15 @@ export default function ResetPassword() {
               />
             </View>
             <TouchableOpacity
-              style={styles.addButton}
               onPress={() => navigation.navigate("Confirmation")}
               disabled={!isValid}
             >
-              <Text style={styles.addButtonText}>Confirm</Text>
+              <LinearGradient
+                colors={["#6a11cb", "#2575fc"]}
+                style={styles.addButton}
+              >
+                <Text style={styles.addButtonText}>Confirm</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </>
         )}
@@ -78,7 +83,7 @@ export default function ResetPassword() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1B1A1C",
+    backgroundColor: "#2f108f",
     padding: 20,
     alignItems: "center",
   },
@@ -89,8 +94,10 @@ const styles = StyleSheet.create({
     height: 50,
     marginTop: 10,
     marginBottom: 50,
+    tintColor: "white",
   },
   inputContainer: {
+    borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
@@ -98,8 +105,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#1B1A1C",
     paddingHorizontal: 12,
     marginBottom: 16,
-    shadowColor: "#1ED760",
-    shadowOffset: { width: 1, height: 1 },
+    shadowColor: "#333",
+    shadowOffset: { width: 1, height: 0 },
     shadowOpacity: 100,
     shadowRadius: 20,
     elevation: 10,
@@ -122,18 +129,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold", // Updated to bold style
   },
   addButton: {
+    borderRadius: 10,
     backgroundColor: "#1ed73c",
     paddingVertical: 8,
     paddingHorizontal: 30,
     marginTop: 50,
     marginBottom: 20,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowColor: "#333",
+    shadowOffset: { width: 1, height: 0 },
+    shadowOpacity: 100,
+    shadowRadius: 20,
+    elevation: 10,
   },
   addButtonText: {
-    color: "#333333",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",

@@ -4,24 +4,19 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
-  TextInput,
-  FlatList,
-  TouchableOpacity,
   Image,
   Dimensions,
+  TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import * as Font from "expo-font";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import CalorieTracker from "@/app/caloriecircle.jsx";
 import CalorieBurntTracker from "@/app/calorieburnt.jsx";
+import calculateTotalCalories from "@/app/(tabs)/nutrition.jsx";
 
-const SCREEN_WIDTH = Dimensions.get("window").height;
-const SECTIONWIDTH = SCREEN_WIDTH * 0.44;
-const SMALLSECWIDTH = SCREEN_WIDTH * 0.22;
-const SCREEN_HEIGHT = Dimensions.get("window").height;
-const SECTIONHEIGHT = SCREEN_HEIGHT * 0.2;
-const SMALLSECHEIGHT = SCREEN_HEIGHT * 0.2;
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const Dashboard = () => {
   const navigation = useNavigation();
@@ -45,315 +40,223 @@ const Dashboard = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.alignflex}>
-        <TouchableOpacity onPress={() => navigation.navigate("profile")}>
-          <Image
-            style={styles.profileIcon}
-            source={require("@/assets/images/profile-icon-colored.png")}
-          />
-        </TouchableOpacity>
-        <Image
-          style={styles.headerText}
-          source={require("@/assets/images/TrackMyFitnessLogo.png")}
-        />
-        <TouchableOpacity onPress={() => navigation.navigate("Notifications")}>
-          {hasNotification ? (
+    <SafeAreaView style={styles.container}>
+      <LinearGradient
+        colors={["#6a11cb", "#2575fc"]}
+        style={styles.headerGradient}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.navigate("profile")}>
             <Image
-              style={styles.bellIconActive}
-              source={require("@/assets/images/bell-icon-active.png")}
+              style={styles.profileIcon}
+              source={require("@/assets/images/profile-icon-colored.png")}
             />
-          ) : (
+          </TouchableOpacity>
+          <Image
+            style={styles.logo}
+            source={require("@/assets/images/TrackMyFitnessLogo.png")}
+          />
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Notifications")}
+          >
             <Image
               style={styles.bellIcon}
-              source={require("@/assets/images/bell-icon.png")}
+              source={
+                hasNotification
+                  ? require("@/assets/images/bell-icon-active.png")
+                  : require("@/assets/images/bell-icon.png")
+              }
             />
-          )}
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
+      <View style={styles.section}>
+        <Text style={styles.sectionHeading}>Today</Text>
+        <View style={styles.navigationButtons}>
+          <TouchableOpacity
+            onPress={() => console.log("Navigate to Yesterday")}
+          >
+            <Image
+              style={styles.navIcon}
+              source={require("@/assets/images/backward.png")}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => console.log("Navigate to Tomorrow")}>
+            <Image
+              style={styles.navIcon}
+              source={require("@/assets/images/forward.png")}
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+      <ScrollView style={styles.scrollableSection}>
+        <TouchableOpacity
+          onPress={() => console.log("Card: Total Calories Goal")}
+        >
+          <LinearGradient colors={["#1B1A1C", "#1B1A1C"]} style={styles.card}>
+            <Text style={styles.cardTitle}>Total Calories Goal</Text>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardLabel}>Consumed: 0 kcal</Text>
+              <Text style={styles.cardLabel}>Goal: 2000 kcal</Text>
+            </View>
+            <CalorieTracker />
+          </LinearGradient>
         </TouchableOpacity>
-      </View>
-      <View style={styles.forback}>
-        <Image
-          style={styles.obj2}
-          source={require("@/assets/images/backward.png")}
-        />
-        <View>
-          <Text style={styles.mediumHeading}>Today</Text>
-        </View>
-        <Image
-          style={styles.obj2}
-          source={require("@/assets/images/forward.png")}
-        />
-      </View>
-      <View style={styles.totalcalories}>
-        <Image
-          style={styles.obj1}
-          source={require("@/assets/images/obj1.png")}
-        />
-        <View style={styles.bigsection}>
-          <View style={styles.backobj}>
-            <Text style={styles.labelobj}>Total Calories Goal:</Text>
-          </View>
-          <View style={styles.values}>
-            <Text style={styles.label}>Consumed: </Text>
-            <Text style={styles.value}>1450</Text>
-            <Text style={styles.kcal}>kcal</Text>
-          </View>
-          <View style={styles.values}>
-            <Text style={styles.label}>Total: </Text>
-            <Text style={styles.value}>2000</Text>
-            <Text style={styles.kcal}>kcal</Text>
-          </View>
-        </View>
-        <View style={styles.caloriecircle}>
-          <CalorieTracker />
-        </View>
-      </View>
 
-      <View style={styles.totalcalories}>
-        <Image
-          style={styles.burntobj1}
-          source={require("@/assets/images/obj1.png")}
-        />
-        <View style={styles.bigsection}>
-          <View style={styles.burntbackobj}>
-            <Text style={styles.labelobj}>Calories Burnt:</Text>
-          </View>
-          <View style={styles.values}>
-            <Text style={styles.label}>Steps: </Text>
-            <Text style={styles.value}>150</Text>
-            <Text style={styles.kcal}>kcal</Text>
-          </View>
-          <View style={styles.values}>
-            <Text style={styles.label}>Exercise: </Text>
-            <Text style={styles.value}>600</Text>
-            <Text style={styles.kcal}>kcal</Text>
-          </View>
+        <TouchableOpacity onPress={() => console.log("Card: Calories Burnt")}>
+          <LinearGradient colors={["#1B1A1C", "#1B1A1C"]} style={styles.card}>
+            <Text style={styles.cardTitle}>Calories Burnt</Text>
+            <View style={styles.cardContent}>
+              <Text style={styles.cardLabel}>Steps: 150 kcal</Text>
+              <Text style={styles.cardLabel}>Exercise: 600 kcal</Text>
+            </View>
+            <CalorieBurntTracker />
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <View style={styles.row}>
+          <TouchableOpacity
+            onPress={() => console.log("Card: Weight Monitoring")}
+          >
+            <LinearGradient
+              colors={["#1B1A1C", "#1B1A1C"]}
+              style={styles.smallCard}
+            >
+              <Text style={styles.smallCardTitle1}>Weight Monitoring</Text>
+              <Text style={styles.cardLabel}>Current: 60 kg</Text>
+              <Text style={styles.cardLabel}>Goal: 75 kg</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => console.log("Card: Steps Counter")}>
+            <LinearGradient
+              colors={["#1B1A1C", "#1B1A1C"]}
+              style={styles.smallCard}
+            >
+              <Text style={styles.smallCardTitle}>Steps</Text>
+              <Text style={styles.smallCardTitle1}>Counter</Text>
+              <Text style={styles.cardLabel}>Current: 1000 steps</Text>
+              <Text style={styles.cardLabel}>Goal: 5000 steps</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
-        <View style={styles.caloriecircle}>
-          <CalorieBurntTracker />
-        </View>
-      </View>
-      <View style={styles.sectionFlex}>
-        <View style={styles.section}>
-          <Image
-            style={styles.weightObj}
-            source={require("@/assets/images/obj1.png")}
-          />
-          <Text style={styles.smallLabelObj}>Weight Monitoring:</Text>
-          <View style={styles.values}>
-            <Text style={styles.label}>Current: </Text>
-            <Text style={styles.value}>60</Text>
-            <Text style={styles.kcal}>kg</Text>
-          </View>
-          <View style={styles.values}>
-            <Text style={styles.label}>Goal: </Text>
-            <Text style={styles.value}>75</Text>
-            <Text style={styles.kcal}>kg</Text>
-          </View>
-        </View>
-        <View style={styles.section}>
-          <Image
-            style={styles.weightObj}
-            source={require("@/assets/images/obj1.png")}
-          />
-          <Text style={styles.smallLabelObj}>Steps Counter:</Text>
-          <View style={styles.values}>
-            <Text style={styles.label}>Current: </Text>
-            <Text style={styles.value}>1000</Text>
-            <Text style={styles.kcal}>steps</Text>
-          </View>
-          <View style={styles.values}>
-            <Text style={styles.label}>Goal: </Text>
-            <Text style={styles.value}>5000</Text>
-            <Text style={styles.kcal}>steps</Text>
-          </View>
-        </View>
-      </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    fontFamily: "Poppins",
-    backgroundColor: "#1B1A1C",
     flex: 1,
+    backgroundColor: "#2f108f",
     padding: 16,
-    paddingTop: 30,
   },
-  alignflex: {
-    marginTop: 20,
-    padding: 1,
+  headerGradient: {
+    borderRadius: 10,
+    paddingBottom: 16,
+    marginBottom: 0,
+    marginTop: 25,
+  },
+  header: {
+    paddingHorizontal: 10,
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 25,
-  },
-  headerBackground: {
-    position: "static",
-    padding: 50,
     alignItems: "center",
+    marginTop: 16,
   },
-  headerText: {
-    width: 180,
-    height: 20,
-    right: 5,
-  },
-  safeArea: {
-    marginVertical: 16,
+  logo: {
+    width: 150,
+    height: 30,
+    tintColor: "white",
+    right: 2,
   },
   profileIcon: {
-    width: 45,
-    height: 45,
-    alignSelf: "center",
+    width: 40,
+    height: 40,
     tintColor: "white",
-  },
-  bellIconActive: {
-    width: 25,
-    height: 25,
-    alignSelf: "center",
   },
   bellIcon: {
     width: 25,
     height: 25,
-    alignSelf: "center",
-    tintColor: "white",
-  },
-  mediumHeading: {
-    marginBottom: 20,
-    fontSize: 30,
-    fontWeight: "900",
-    color: "#fff",
-    display: "flex",
-    textAlign: "center",
-    alignContent: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  forback: {
-    width: SECTIONWIDTH,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "baseline",
-  },
-  weightObj: {
-    left: -4,
-    width: 215,
-    height: 90,
-    position: "absolute",
-  },
-  burntobj1: {
-    left: -4,
-    width: 270,
-    height: 115,
-    position: "absolute",
-  },
-  obj2: {
-    marginTop: 20,
-    marginBottom: 30,
-    marginHorizontal: 100,
-    width: 20,
-    height: 20,
-  },
-  obj1: {
-    left: -4,
-    width: 270,
-    height: 115,
-    position: "absolute",
-  },
-  backobj: {
-    flexWrap: "wrap",
-  },
-  burntbackobj: {
-    marginRight: 58,
   },
   section: {
-    display: "flex",
-    flexDirection: "column",
-    marginBottom: 24,
-    backgroundColor: "#1B1A1C",
-    padding: 10,
-    shadowColor: "#1ED760",
-    shadowOffset: { width: 1, height: 0 },
-    shadowOpacity: 100,
-    shadowRadius: 20,
-    elevation: 10,
-    height: SMALLSECHEIGHT,
-    width: SMALLSECWIDTH,
-    borderWidth: 0.5,
-    borderColor: "#1B1A1C",
+    marginBottom: 20,
   },
-  totalcalories: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 24,
-    backgroundColor: "#1B1A1C",
-    padding: 10,
-    shadowColor: "#1ED760",
-    shadowOffset: { width: 1, height: 0 },
-    shadowOpacity: 100,
-    shadowRadius: 20,
-    elevation: 10,
-    height: SECTIONHEIGHT,
-    borderWidth: 0.5,
-    borderColor: "#1B1A1C",
-  },
-  bigsection: {
-    margin: 5,
-  },
-  sectionFlex: {
-    flexDirection: "row",
-    gap: 9,
-  },
-  caloriecircle: {
-    right: 14,
-    padding: 2,
-  },
-
-  gradientSection: {
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "flex-start",
-  },
-  smallLabelObj: {
-    fontFamily: "Poppins",
-    fontSize: 17,
-    fontWeight: "600",
-    color: "#000",
-  },
-  labelobj: {
-    fontFamily: "Poppins",
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#000",
-  },
-  label: {
-    fontFamily: "Poppins",
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#fff",
-  },
-  kcal: {
-    alignItems: "center",
-    fontFamily: "Poppins",
-    fontSize: 15,
-    color: "#a6a6a6",
-    marginRight: 15,
-  },
-  values: {
-    marginTop: 5,
-    flexDirection: "row",
-    alignItems: "flex-end",
-  },
-  value: {
+  sectionHeading: {
+    position: "relative",
+    bottom: -33,
     justifyContent: "center",
     alignItems: "center",
-    fontFamily: "Poppins",
+    textAlign: "center",
+    fontSize: 24,
     fontWeight: "bold",
-    fontSize: 25,
-    color: "#a6a6a6",
-    marginTop: 4,
+    color: "#fff",
+  },
+  navigationButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  navIcon: {
+    width: 24,
+    height: 24,
+    tintColor: "#fff",
+  },
+  scrollableSection: {
+    flex: 1,
+  },
+  card: {
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 8,
+  },
+  cardContent: {
+    marginBottom: 12,
+  },
+  cardLabel: {
+    fontSize: 16,
+    color: "#fff",
+    marginBottom: 4,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  row1: {
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+  },
+  smallCard: {
+    borderRadius: 10,
+    padding: 16,
+    width: (SCREEN_WIDTH - 48) / 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  smallCardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  smallCardTitle1: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 8,
   },
 });
 

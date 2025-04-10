@@ -14,6 +14,7 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import { Formik } from "formik";
 import * as yup from "yup";
+import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { Picker } from "@react-native-picker/picker"; // Import the Picker component
 
@@ -207,12 +208,18 @@ export default function Signup() {
               <Text style={styles.errorText}>{errors.fitnessGoal}</Text>
             )}
 
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={handleSubmit}
-              disabled={!isValid}
-            >
-              <Text style={styles.addButtonText}>Sign Up</Text>
+            <TouchableOpacity onPress={handleSubmit} disabled={!isValid}>
+              <LinearGradient
+                colors={["#6a11cb", "#2575fc"]}
+                style={styles.addButton}
+              >
+                <Text
+                  style={styles.addButtonText}
+                  onPress={() => navigation.goBack()}
+                >
+                  Sign Up
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -234,7 +241,7 @@ export default function Signup() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#1B1A1C",
+    backgroundColor: "#2f108f",
     padding: 20,
     alignItems: "center",
     justifyContent: "flex-start",
@@ -246,8 +253,10 @@ const styles = StyleSheet.create({
     height: 50,
     marginTop: 10,
     marginBottom: 50,
+    tintColor: "white",
   },
   inputContainer: {
+    borderRadius: 10,
     flexDirection: "row",
     alignItems: "center",
     width: "100%",
@@ -255,8 +264,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#1B1A1C",
     paddingHorizontal: 12,
     marginBottom: 16,
-    shadowColor: "#1ED760",
-    shadowOffset: { width: 1, height: 1 },
+    shadowColor: "#333",
+    shadowOffset: { width: 1, height: 0 },
     shadowOpacity: 100,
     shadowRadius: 20,
     elevation: 10,
@@ -279,6 +288,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   addButton: {
+    borderRadius: 10,
     backgroundColor: "#1ed73c",
     paddingVertical: 8,
     paddingHorizontal: 30,
@@ -290,7 +300,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   addButtonText: {
-    color: "#333333",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",

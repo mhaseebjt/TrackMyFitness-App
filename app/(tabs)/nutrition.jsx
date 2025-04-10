@@ -14,6 +14,7 @@ import {
 import * as Font from "expo-font";
 import { useNavigation } from "@react-navigation/native";
 import hasNotification from "@/app/(tabs)/index.jsx";
+import { LinearGradient } from "expo-linear-gradient";
 
 const App = () => {
   const navigation = useNavigation();
@@ -105,42 +106,45 @@ const App = () => {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <TouchableWithoutFeedback
-        onPress={() => {
-          if (!cancelHide.current) {
-            setDropdownVisible(false);
-          }
-          cancelHide.current = false;
-        }}
-      >
-        <View style={styles.container}>
-          {/* Modal for Meal Picker */}
-          <Modal
-            transparent
-            visible={mealPickerVisible}
-            animationType="slide"
-            onRequestClose={() => setMealPickerVisible(false)}
-          >
-            <View style={styles.modalOverlay}>
-              <View style={styles.modalContainer}>
-                {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
-                  <TouchableOpacity
-                    key={meal}
-                    style={styles.modalItem}
-                    onPress={() => {
-                      setSelectedMeal(meal);
-                      setMealPickerVisible(false);
-                    }}
-                  >
-                    <Text style={styles.modalItemText}>{meal}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        if (!cancelHide.current) {
+          setDropdownVisible(false);
+        }
+        cancelHide.current = false;
+      }}
+    >
+      <View style={styles.container}>
+        {/* Modal for Meal Picker */}
+        <Modal
+          transparent
+          visible={mealPickerVisible}
+          animationType="slide"
+          onRequestClose={() => setMealPickerVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
+                <TouchableOpacity
+                  key={meal}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setSelectedMeal(meal);
+                    setMealPickerVisible(false);
+                  }}
+                >
+                  <Text style={styles.modalItemText}>{meal}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-          </Modal>
+          </View>
+        </Modal>
 
-          <View style={styles.alignflex}>
+        <LinearGradient
+          colors={["#6a11cb", "#2575fc"]}
+          style={styles.headerGradient}
+        >
+          <View style={styles.header}>
             <TouchableOpacity onPress={() => navigation.navigate("profile")}>
               <Image
                 style={styles.profileIcon}
@@ -148,105 +152,129 @@ const App = () => {
               />
             </TouchableOpacity>
             <Image
-              style={styles.headerText}
+              style={styles.logo}
               source={require("@/assets/images/TrackMyFitnessLogo.png")}
             />
             <TouchableOpacity
               onPress={() => navigation.navigate("Notifications")}
             >
-              {hasNotification ? (
-                <Image
-                  style={styles.bellIconActive}
-                  source={require("@/assets/images/bell-icon-active.png")}
-                />
-              ) : (
-                <Image
-                  style={styles.bellIcon}
-                  source={require("@/assets/images/bell-icon.png")}
-                />
-              )}
+              <Image
+                style={styles.bellIcon}
+                source={
+                  hasNotification
+                    ? require("@/assets/images/bell-icon-active.png")
+                    : require("@/assets/images/bell-icon.png")
+                }
+              />
             </TouchableOpacity>
           </View>
-          <Text style={styles.totalCalories}>
-            Total Calories: {calculateTotalCalories()}
-          </Text>
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchBar}
-              placeholder="Search for food"
-              placeholderTextColor="#aaa"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onFocus={() => setDropdownVisible(true)}
-            />
-            {dropdownVisible && (
-              <View
-                style={styles.dropdownContainer}
-                onStartShouldSetResponder={handleDropdownPress}
-              >
-                {filteredFoodList.map((food) => (
-                  <View key={food.id} style={styles.dropdownItem}>
-                    <Text style={styles.foodText}>
-                      {food.name} - {food.calories} cal
-                    </Text>
-                    <View style={styles.addSection}>
-                      <TextInput
-                        style={styles.quantityInput}
-                        keyboardType="number-pad"
-                        value={quantity.toString()}
-                        onChangeText={(value) =>
-                          setQuantity(Math.max(0, parseInt(value) || 0))
-                        }
-                      />
-                      <TouchableOpacity
-                        style={styles.pickerButton}
-                        onPress={() => setMealPickerVisible(true)}
-                      >
-                        <Text style={styles.pickerButtonText}>
-                          {selectedMeal}
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.addButton}
-                        onPress={() => addToMeal(food)}
-                      >
-                        <Text style={styles.addButtonText}>+</Text>
-                      </TouchableOpacity>
-                    </View>
+        </LinearGradient>
+        <Text style={styles.totalCalories}>
+          Total Calories: {calculateTotalCalories()}
+        </Text>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Search for food"
+            placeholderTextColor="#aaa"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onFocus={() => setDropdownVisible(true)}
+          />
+          {dropdownVisible && (
+            <View
+              style={styles.dropdownContainer}
+              onStartShouldSetResponder={handleDropdownPress}
+            >
+              {filteredFoodList.map((food) => (
+                <View key={food.id} style={styles.dropdownItem}>
+                  <Text style={styles.foodText}>
+                    {food.name} - {food.calories} cal
+                  </Text>
+                  <View style={styles.addSection}>
+                    <TextInput
+                      style={styles.quantityInput}
+                      keyboardType="number-pad"
+                      value={quantity.toString()}
+                      onChangeText={(value) =>
+                        setQuantity(Math.max(0, parseInt(value) || 0))
+                      }
+                    />
+                    <TouchableOpacity
+                      style={styles.pickerButton}
+                      onPress={() => setMealPickerVisible(true)}
+                    >
+                      <Text style={styles.pickerButtonText}>
+                        {selectedMeal}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.addButton}
+                      onPress={() => addToMeal(food)}
+                    >
+                      <Text style={styles.addButtonText}>+</Text>
+                    </TouchableOpacity>
                   </View>
-                ))}
-              </View>
-            )}
-          </View>
-
-          {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
-            <View key={meal} style={styles.section}>
-              <View style={styles.mealHeader}>
-                <Text style={styles.label}>{meal}</Text>
-                <Text style={styles.calorieCount}>
-                  {calculateMealCalories(meal)} cal
-                </Text>
-              </View>
-              {addedFood[meal].map((food, index) => (
-                <Text key={index} style={styles.value}>
-                  {food.name} - {food.calories} cal x {food.count}
-                </Text>
+                </View>
               ))}
             </View>
-          ))}
+          )}
         </View>
-      </TouchableWithoutFeedback>
-    </ScrollView>
+
+        {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
+          <View key={meal} style={styles.section}>
+            <View style={styles.mealHeader}>
+              <Text style={styles.label}>{meal}</Text>
+              <Text style={styles.calorieCount}>
+                {calculateMealCalories(meal)} cal
+              </Text>
+            </View>
+            {addedFood[meal].map((food, index) => (
+              <Text key={index} style={styles.value}>
+                {food.name} - {food.calories} cal x {food.count}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     fontFamily: "Poppins",
-    backgroundColor: "#1B1A1C",
+    backgroundColor: "#2f108f",
     flex: 1,
     padding: 16,
-    paddingTop: 30,
+  },
+  headerGradient: {
+    borderRadius: 10,
+    paddingBottom: 16,
+    marginBottom: 30,
+    marginTop: 25,
+  },
+  header: {
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 16,
+  },
+  logo: {
+    width: 150,
+    height: 30,
+    tintColor: "white",
+    right: 2,
+  },
+  profileIcon: {
+    width: 40,
+    height: 40,
+    tintColor: "white",
+  },
+  bellIcon: {
+    width: 25,
+    height: 25,
   },
   alignflex: {
     marginTop: 20,
@@ -269,29 +297,14 @@ const styles = StyleSheet.create({
   safeArea: {
     marginVertical: 16,
   },
-  profileIcon: {
-    width: 45,
-    height: 45,
-    alignSelf: "center",
-    tintColor: "white",
-  },
-  bellIconActive: {
-    width: 25,
-    height: 25,
-    alignSelf: "center",
-  },
-  bellIcon: {
-    width: 25,
-    height: 25,
-    alignSelf: "center",
-    tintColor: "white",
-  },
   searchContainer: {
+    borderRadius: 10,
     width: "100%",
     position: "relative",
     zIndex: 10,
   },
   searchBar: {
+    borderRadius: 10,
     width: "100%",
     height: 40,
     backgroundColor: "#ffffff",
@@ -304,12 +317,13 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   dropdownContainer: {
+    borderRadius: 10,
     overflow: "visible",
     position: "absolute",
     top: 50,
     width: "100%",
     backgroundColor: "#1B1A1C",
-    shadowColor: "#1ED760",
+    shadowColor: "#fff",
     shadowOffset: { width: 1, height: 0 },
     shadowOpacity: 100,
     shadowRadius: 20,
@@ -329,15 +343,16 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 24,
     fontWeight: "900",
-    color: "#1ed73c",
+    color: "#fff",
   },
   section: {
+    borderRadius: 10,
     marginTop: 24,
-    marginBottom: 24,
+    marginBottom: 4,
     alignItems: "flex-start",
     backgroundColor: "#1B1A1C",
     padding: 16,
-    shadowColor: "#1ED760",
+    shadowColor: "#333",
     shadowOffset: { width: 1, height: 0 },
     shadowOpacity: 100,
     shadowRadius: 20,
@@ -345,6 +360,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   mealHeader: {
+    fontWeight: "700",
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
@@ -352,8 +368,8 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: "Poppins",
     fontSize: 18,
-    fontWeight: "600",
-    color: "#1ed73c",
+    fontWeight: "900",
+    color: "#fff",
   },
   calorieCount: {
     fontFamily: "Poppins",
@@ -407,7 +423,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   pickerButton: {
-    backgroundColor: "#1ed73c",
+    borderRadius: 10,
+    backgroundColor: "#2f108f",
     paddingVertical: 10,
     paddingHorizontal: 82,
     marginTop: 10,
@@ -418,7 +435,7 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
   },
   pickerButtonText: {
-    color: "#333333",
+    color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
