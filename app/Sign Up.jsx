@@ -7,52 +7,43 @@ import {
   StyleSheet,
   Image,
   Alert,
-  KeyboardAvoidingView,
   ScrollView,
-  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { Formik } from "formik";
 import * as yup from "yup";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
-import { Picker } from "@react-native-picker/picker"; // Import the Picker component
+import { Picker } from "@react-native-picker/picker";
+
+import { signUpUser } from "@/scripts/firebaseAuth"; // Import Firebase signup logic
 
 const loginValidationSchema = yup.object().shape({
-  email: yup
-    .string()
-    .email("Please enter a valid email")
-    .required("Email is required"),
-  password: yup
-    .string()
-    .min(6, ({ min }) => `Password must be at least ${min} characters`)
-    .required("Password is required"),
-  height: yup
-    .number()
-    .min(50, "Height must be at least 50 cm")
-    .max(250, "Height cannot exceed 250 cm")
-    .required("Height is required"),
-  weight: yup
-    .number()
-    .min(20, "Weight must be at least 20 kg")
-    .max(300, "Weight cannot exceed 300 kg")
-    .required("Weight is required"),
-  fitnessGoal: yup.string().required("Fitness goal is required"),
+  email: yup.string().email("Invalid email").required("Email is required"),
+  password: yup.string().min(6).required("Password is required"),
   confirmPassword: yup
     .string()
-    .oneOf([yup.ref("password"), null], "Incorrect Password")
+    .oneOf([yup.ref("password"), null], "Passwords must match")
     .required("Confirm Password is required"),
+  height: yup.number().min(50).max(250).required("Height is required"),
+  weight: yup.number().min(20).max(300).required("Weight is required"),
+  fitnessGoal: yup.string().required("Fitness goal is required"),
 });
-
-const submit = (values) => {
-  console.log(values);
-  Alert.alert("Signup Successful", `Welcome, ${values.email}`);
-};
 
 export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigation = useNavigation();
+
+  const submit = async (values) => {
+    try {
+      await signUpUser(values);
+      Alert.alert("Signup Successful", `Welcome, ${values.email}`);
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert("Signup Failed", error.message);
+    }
+  };
 
   return (
     <ScrollView
@@ -72,7 +63,7 @@ export default function Signup() {
           confirmPassword: "",
           height: "",
           weight: "",
-          fitnessGoal: "", // Initial value for fitness goal
+          fitnessGoal: "",
         }}
         onSubmit={submit}
       >
@@ -86,111 +77,65 @@ export default function Signup() {
           isValid,
         }) => (
           <>
-            <View style={styles.inputContainer}>
-              <Icon name="mail-outline" size={20} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                keyboardType="email-address"
-                onChangeText={handleChange("email")}
-                onBlur={handleBlur("email")}
-                value={values.email}
-                placeholderTextColor="#999"
-              />
-            </View>
-            {errors.email && touched.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
-            )}
+            <InputField
+              icon="mail-outline"
+              placeholder="Email"
+              keyboardType="email-address"
+              value={values.email}
+              onChangeText={handleChange("email")}
+              onBlur={handleBlur("email")}
+            />
+            <ErrorText error={errors.email} touched={touched.email} />
 
-            {/* Password Input with Eye Icon */}
-            <View style={styles.inputContainer}>
-              <Icon name="lock-closed-outline" size={20} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry={!showPassword}
-                onChangeText={handleChange("password")}
-                onBlur={handleBlur("password")}
-                value={values.password}
-                placeholderTextColor="#999"
-              />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowPassword(!showPassword)}
-              >
-                <Icon
-                  name={showPassword ? "eye-off-outline" : "eye-outline"}
-                  size={20}
-                  color="#555"
-                />
-              </TouchableOpacity>
-            </View>
-            {errors.password && touched.password && (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            )}
+            <InputField
+              icon="lock-closed-outline"
+              placeholder="Password"
+              secureTextEntry={!showPassword}
+              value={values.password}
+              onChangeText={handleChange("password")}
+              onBlur={handleBlur("password")}
+              toggleEye={() => setShowPassword(!showPassword)}
+              showEyeIcon={true}
+              eyeVisible={showPassword}
+            />
+            <ErrorText error={errors.password} touched={touched.password} />
 
-            {/* Confirm Password Input with Eye Icon */}
-            <View style={styles.inputContainer}>
-              <Icon name="lock-closed-outline" size={20} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Confirm Password"
-                secureTextEntry={!showConfirmPassword}
-                onChangeText={handleChange("confirmPassword")}
-                onBlur={handleBlur("confirmPassword")}
-                value={values.confirmPassword}
-                placeholderTextColor="#999"
-              />
-              <TouchableOpacity
-                style={styles.eyeIcon}
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                <Icon
-                  name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
-                  size={20}
-                  color="#555"
-                />
-              </TouchableOpacity>
-            </View>
-            {errors.confirmPassword && touched.confirmPassword && (
-              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-            )}
+            <InputField
+              icon="lock-closed-outline"
+              placeholder="Confirm Password"
+              secureTextEntry={!showConfirmPassword}
+              value={values.confirmPassword}
+              onChangeText={handleChange("confirmPassword")}
+              onBlur={handleBlur("confirmPassword")}
+              toggleEye={() => setShowConfirmPassword(!showConfirmPassword)}
+              showEyeIcon={true}
+              eyeVisible={showConfirmPassword}
+            />
+            <ErrorText
+              error={errors.confirmPassword}
+              touched={touched.confirmPassword}
+            />
 
-            {/* Height Input */}
-            <View style={styles.inputContainer}>
-              <Icon name="walk-outline" size={20} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Height (in cm)"
-                keyboardType="numeric"
-                onChangeText={handleChange("height")}
-                onBlur={handleBlur("height")}
-                value={values.height}
-                placeholderTextColor="#999"
-              />
-            </View>
-            {errors.height && touched.height && (
-              <Text style={styles.errorText}>{errors.height}</Text>
-            )}
+            <InputField
+              icon="walk-outline"
+              placeholder="Height (in cm)"
+              keyboardType="numeric"
+              value={values.height}
+              onChangeText={handleChange("height")}
+              onBlur={handleBlur("height")}
+            />
+            <ErrorText error={errors.height} touched={touched.height} />
 
-            {/* Weight Input */}
-            <View style={styles.inputContainer}>
-              <Icon name="fitness-outline" size={20} style={styles.icon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Weight (in kg)"
-                keyboardType="numeric"
-                onChangeText={handleChange("weight")}
-                onBlur={handleBlur("weight")}
-                value={values.weight}
-                placeholderTextColor="#999"
-              />
-            </View>
-            {errors.weight && touched.weight && (
-              <Text style={styles.errorText}>{errors.weight}</Text>
-            )}
+            <InputField
+              icon="fitness-outline"
+              placeholder="Weight (in kg)"
+              keyboardType="numeric"
+              value={values.weight}
+              onChangeText={handleChange("weight")}
+              onBlur={handleBlur("weight")}
+            />
+            <ErrorText error={errors.weight} touched={touched.weight} />
 
-            {/* Fitness Goal Dropdown */}
             <View style={styles.inputContainer}>
               <Icon name="barbell-outline" size={20} style={styles.icon} />
               <Picker
@@ -204,21 +149,17 @@ export default function Signup() {
                 <Picker.Item label="Lose Weight" value="Lose Weight" />
               </Picker>
             </View>
-            {errors.fitnessGoal && touched.fitnessGoal && (
-              <Text style={styles.errorText}>{errors.fitnessGoal}</Text>
-            )}
+            <ErrorText
+              error={errors.fitnessGoal}
+              touched={touched.fitnessGoal}
+            />
 
             <TouchableOpacity onPress={handleSubmit} disabled={!isValid}>
               <LinearGradient
                 colors={["#6a11cb", "#2575fc"]}
                 style={styles.addButton}
               >
-                <Text
-                  style={styles.addButtonText}
-                  onPress={() => navigation.goBack()}
-                >
-                  Sign Up
-                </Text>
+                <Text style={styles.addButtonText}>Sign Up</Text>
               </LinearGradient>
             </TouchableOpacity>
 
@@ -237,6 +178,45 @@ export default function Signup() {
     </ScrollView>
   );
 }
+
+const InputField = ({
+  icon,
+  placeholder,
+  secureTextEntry,
+  keyboardType,
+  value,
+  onChangeText,
+  onBlur,
+  toggleEye,
+  showEyeIcon,
+  eyeVisible,
+}) => (
+  <View style={styles.inputContainer}>
+    <Icon name={icon} size={20} style={styles.icon} />
+    <TextInput
+      style={styles.input}
+      placeholder={placeholder}
+      secureTextEntry={secureTextEntry}
+      keyboardType={keyboardType}
+      onChangeText={onChangeText}
+      onBlur={onBlur}
+      value={value}
+      placeholderTextColor="#999"
+    />
+    {showEyeIcon && (
+      <TouchableOpacity style={styles.eyeIcon} onPress={toggleEye}>
+        <Icon
+          name={eyeVisible ? "eye-off-outline" : "eye-outline"}
+          size={20}
+          color="#555"
+        />
+      </TouchableOpacity>
+    )}
+  </View>
+);
+
+const ErrorText = ({ error, touched }) =>
+  error && touched ? <Text style={styles.errorText}>{error}</Text> : null;
 
 const styles = StyleSheet.create({
   container: {

@@ -9,21 +9,66 @@ import {
   TouchableOpacity,
   TouchableWithoutFeedback,
   Modal,
-  FlatList,
 } from "react-native";
 import * as Font from "expo-font";
-import { useNavigation } from "@react-navigation/native";
 import hasNotification from "@/app/(tabs)/index.jsx";
+import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "@/scripts/firebaseConfig.js"; // Import Firebase setup
 
 const App = () => {
   const navigation = useNavigation();
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [foodList, setFoodList] = useState([
-    { id: "1", name: "Apple", calories: 95 },
-    { id: "2", name: "Banana", calories: 105 },
-    { id: "3", name: "Egg", calories: 78 },
-    { id: "4", name: "Toast", calories: 75 },
+    { id: "1", name: "Apple (1 medium)", calories: 95 },
+    { id: "2", name: "Banana (1 medium)", calories: 105 },
+    { id: "3", name: "Egg (1 large, hard-boiled)", calories: 78 },
+    { id: "4", name: "Toast (1 slice, white bread)", calories: 75 },
+    { id: "5", name: "Carrot (1 medium)", calories: 25 },
+    { id: "6", name: "Broccoli (1 cup, cooked)", calories: 55 },
+    { id: "7", name: "Cucumber (1 cup, sliced)", calories: 16 },
+    { id: "8", name: "Tomato (1 medium)", calories: 22 },
+    { id: "9", name: "Spinach (1 cup, raw)", calories: 7 },
+    { id: "10", name: "Potato (1 medium, baked)", calories: 161 },
+    { id: "11", name: "Sweet Potato (1 medium, baked)", calories: 103 },
+    { id: "12", name: "Avocado (1 medium)", calories: 234 },
+    { id: "13", name: "Orange (1 medium)", calories: 62 },
+    { id: "14", name: "Strawberries (1 cup, halved)", calories: 49 },
+    { id: "15", name: "Blueberries (1 cup)", calories: 84 },
+    { id: "16", name: "Grapes (1 cup)", calories: 62 },
+    { id: "17", name: "Pineapple (1 cup, chunks)", calories: 82 },
+    { id: "18", name: "Watermelon (1 cup, diced)", calories: 46 },
+    { id: "19", name: "Peach (1 medium)", calories: 59 },
+    { id: "20", name: "Pear (1 medium)", calories: 96 },
+    { id: "21", name: "Mango (1 medium)", calories: 135 },
+    { id: "22", name: "Cherries (1 cup, without pits)", calories: 97 },
+    { id: "23", name: "Chicken Breast (3 oz, cooked)", calories: 142 },
+    { id: "24", name: "Salmon (3 oz, cooked)", calories: 175 },
+    { id: "25", name: "Turkey Breast (3 oz, cooked)", calories: 135 },
+    { id: "26", name: "Tofu (1/2 cup, firm)", calories: 94 },
+    { id: "27", name: "Lentils (1 cup, cooked)", calories: 230 },
+    { id: "28", name: "Black Beans (1 cup, cooked)", calories: 227 },
+    { id: "29", name: "Shrimp (3 oz, cooked)", calories: 84 },
+    { id: "30", name: "White Bread (1 slice)", calories: 66 },
+    { id: "31", name: "Whole Wheat Bread (1 slice)", calories: 70 },
+    { id: "32", name: "Brown Rice (1 cup, cooked)", calories: 215 },
+    { id: "33", name: "Quinoa (1 cup, cooked)", calories: 222 },
+    { id: "34", name: "Oatmeal (1 cup, cooked)", calories: 147 },
+    { id: "35", name: "Pasta (1 cup, cooked)", calories: 221 },
+    { id: "36", name: "Bagel (1 medium)", calories: 289 },
+    { id: "37", name: "Tortilla (1 medium, flour)", calories: 144 },
+    { id: "38", name: "Croissant (1 medium)", calories: 231 },
+    { id: "39", name: "English Muffin (1 whole)", calories: 132 },
+    { id: "40", name: "Milk (1 cup, whole)", calories: 150 },
+    { id: "41", name: "Greek Yogurt (1 cup, plain, non-fat)", calories: 100 },
+    { id: "42", name: "Cheddar Cheese (1 oz)", calories: 113 },
+    { id: "43", name: "Cottage Cheese (1 cup, low-fat)", calories: 206 },
+    { id: "44", name: "Butter (1 tbsp)", calories: 102 },
+    { id: "45", name: "Cream Cheese (1 tbsp)", calories: 50 },
+    { id: "46", name: "Ice Cream (1/2 cup, vanilla)", calories: 137 },
+    { id: "47", name: "Almond Milk (1 cup, unsweetened)", calories: 30 },
   ]);
   const [addedFood, setAddedFood] = useState({
     Breakfast: [],
@@ -36,7 +81,7 @@ const App = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedMeal, setSelectedMeal] = useState("Breakfast");
   const [quantity, setQuantity] = useState(1);
-  const [mealPickerVisible, setMealPickerVisible] = useState(false); // Modal state
+  const [mealPickerVisible, setMealPickerVisible] = useState(false);
   const cancelHide = useRef(false);
 
   useEffect(() => {
@@ -47,6 +92,39 @@ const App = () => {
       setFontsLoaded(true);
     };
     loadFonts();
+  }, []);
+
+  // 🔄 Load saved meals on login
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        try {
+          const docSnap = await getDoc(userDocRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setAddedFood({
+              Breakfast: data.Breakfast || [],
+              Lunch: data.Lunch || [],
+              Dinner: data.Dinner || [],
+              Snacks: data.Snacks || [],
+            });
+          }
+        } catch (error) {
+          console.error("Error loading saved meals:", error);
+        }
+      } else {
+        // ❌ User logged out: Clear meals
+        setAddedFood({
+          Breakfast: [],
+          Lunch: [],
+          Dinner: [],
+          Snacks: [],
+        });
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -73,17 +151,19 @@ const App = () => {
         (item) => item.id === food.id
       );
 
+      let updatedMealFoods;
       if (existingFoodIndex !== -1) {
-        const updatedMealFoods = [...mealFoods];
+        updatedMealFoods = [...mealFoods];
         updatedMealFoods[existingFoodIndex].count += quantity;
-        return { ...prev, [selectedMeal]: updatedMealFoods };
+      } else {
+        updatedMealFoods = [...mealFoods, { ...food, count: quantity }];
       }
 
-      return {
-        ...prev,
-        [selectedMeal]: [...mealFoods, { ...food, count: quantity }],
-      };
+      const newMeals = { ...prev, [selectedMeal]: updatedMealFoods };
+      saveMealsToFirestore(newMeals); // Save updated meals
+      return newMeals;
     });
+
     setQuantity(1);
     setDropdownVisible(false);
   };
@@ -101,9 +181,60 @@ const App = () => {
     );
   };
 
+  const saveMealsToFirestore = async (meals) => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userDocRef = doc(db, "users", currentUser.uid);
+
+      const mealsData = {
+        ...meals,
+        totalCalories: Object.values(meals)
+          .flat()
+          .reduce((total, food) => total + food.calories * food.count, 0),
+      };
+
+      try {
+        await setDoc(userDocRef, mealsData, { merge: true });
+        console.log("Meals saved successfully!");
+      } catch (error) {
+        console.error("Error saving meals: ", error);
+      }
+    } else {
+      console.log("User not logged in!");
+    }
+  };
+
   if (!fontsLoaded) {
     return null;
   }
+
+  const resetMeals = async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userDocRef = doc(db, "users", currentUser.uid);
+
+      const emptyMeals = {
+        Breakfast: [],
+        Lunch: [],
+        Dinner: [],
+        Snacks: [],
+        totalCalories: 0,
+      };
+
+      try {
+        await setDoc(userDocRef, emptyMeals, { merge: true });
+        setAddedFood({
+          Breakfast: [],
+          Lunch: [],
+          Dinner: [],
+          Snacks: [],
+        });
+        console.log("Meals reset successfully!");
+      } catch (error) {
+        console.error("Error resetting meals: ", error);
+      }
+    }
+  };
 
   return (
     <TouchableWithoutFeedback
@@ -115,7 +246,6 @@ const App = () => {
       }}
     >
       <View style={styles.container}>
-        {/* Modal for Meal Picker */}
         <Modal
           transparent
           visible={mealPickerVisible}
@@ -158,20 +288,28 @@ const App = () => {
             <TouchableOpacity
               onPress={() => navigation.navigate("Notifications")}
             >
-              <Image
-                style={styles.bellIcon}
-                source={
-                  hasNotification
-                    ? require("@/assets/images/bell-icon-active.png")
-                    : require("@/assets/images/bell-icon.png")
-                }
-              />
+              {hasNotification ? (
+                <Image
+                  style={styles.bellIconActive}
+                  source={require("@/assets/images/bell-icon-active.png")}
+                />
+              ) : (
+                <Image
+                  style={styles.bellIcon}
+                  source={require("@/assets/images/bell-icon.png")}
+                />
+              )}
             </TouchableOpacity>
           </View>
         </LinearGradient>
         <Text style={styles.totalCalories}>
           Total Calories: {calculateTotalCalories()}
         </Text>
+
+        <TouchableOpacity style={styles.resetButton} onPress={resetMeals}>
+          <Text style={styles.resetButtonText}>Reset</Text>
+        </TouchableOpacity>
+
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchBar}
@@ -220,22 +358,26 @@ const App = () => {
             </View>
           )}
         </View>
-
-        {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
-          <View key={meal} style={styles.section}>
-            <View style={styles.mealHeader}>
-              <Text style={styles.label}>{meal}</Text>
-              <Text style={styles.calorieCount}>
-                {calculateMealCalories(meal)} cal
-              </Text>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 50 }}
+        >
+          {["Breakfast", "Lunch", "Dinner", "Snacks"].map((meal) => (
+            <View key={meal} style={styles.section}>
+              <View style={styles.mealHeader}>
+                <Text style={styles.label}>{meal}</Text>
+                <Text style={styles.calorieCount}>
+                  {calculateMealCalories(meal)} cal
+                </Text>
+              </View>
+              {addedFood[meal].map((food, index) => (
+                <Text key={index} style={styles.value}>
+                  {food.name} - {food.calories} cal x {food.count}
+                </Text>
+              ))}
             </View>
-            {addedFood[meal].map((food, index) => (
-              <Text key={index} style={styles.value}>
-                {food.name} - {food.calories} cal x {food.count}
-              </Text>
-            ))}
-          </View>
-        ))}
+          ))}
+        </ScrollView>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -271,6 +413,11 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     tintColor: "white",
+  },
+  bellIconActive: {
+    width: 25,
+    height: 25,
+    alignSelf: "center",
   },
   bellIcon: {
     width: 25,
@@ -460,6 +607,21 @@ const styles = StyleSheet.create({
   modalItemText: {
     fontSize: 18,
     color: "#333",
+  },
+  resetButton: {
+    backgroundColor: "#ff4d4d",
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    alignSelf: "center",
+    marginBottom: 10,
+    marginTop: -10,
+  },
+  resetButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    fontFamily: "Poppins",
   },
 });
 

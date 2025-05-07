@@ -14,29 +14,71 @@ import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import CalorieTracker from "@/app/caloriecircle.jsx";
 import CalorieBurntTracker from "@/app/calorieburnt.jsx";
-import calculateTotalCalories from "@/app/(tabs)/nutrition.jsx";
+import { getFirestore, doc, onSnapshot } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { app } from "@/scripts/firebaseConfig.js";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 const Dashboard = () => {
   const navigation = useNavigation();
+  const [weight, setWeight] = useState(0); // Default dummy
+  const [totalCalories, setTotalCalories] = useState(0); // Default dummy
+  const [caloriesBurned, setCaloriesBurned] = useState(0); // Default dummy
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [hasNotification, setHasNotification] = useState(false);
 
   useEffect(() => {
+    const db = getFirestore(app);
+    const auth = getAuth();
+
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      console.log("Auth user:", user);
+
+      if (!user) {
+        console.log("User not logged in, showing dummy data");
+      } else {
+        const userDocRef = doc(db, "users", user.uid);
+        const unsubDoc = onSnapshot(userDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            console.log("Fetched Firestore data:", data);
+            setTotalCalories(data.totalCalories ?? 0);
+            setCaloriesBurned(data.totalCaloriesBurned ?? 0);
+            setWeight(data.weight ?? 0);
+          } else {
+            console.log("No document found for user");
+          }
+        });
+
+        // Clean up document listener when user changes
+        return () => unsubDoc();
+      }
+
+      setHasNotification(true);
+    });
+
+    // Clean up auth listener when component unmounts
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const loadFonts = async () => {
-      await Font.loadAsync({
-        Poppins: require("@/assets/fonts/Poppins.ttf"),
-      });
-      setFontsLoaded(true);
+      try {
+        await Font.loadAsync({
+          Poppins: require("@/assets/fonts/Poppins.ttf"),
+        });
+        console.log("Fonts loaded");
+        setFontsLoaded(true);
+      } catch (error) {
+        console.error("Error loading fonts:", error);
+      }
     };
     loadFonts();
-    const notificationReceived = true;
-    setHasNotification(notificationReceived);
   }, []);
 
   if (!fontsLoaded) {
-    return null; // Render nothing until fonts are loaded
+    return null; // Wait for fonts
   }
 
   return (
@@ -70,6 +112,7 @@ const Dashboard = () => {
           </TouchableOpacity>
         </View>
       </LinearGradient>
+
       <View style={styles.section}>
         <Text style={styles.sectionHeading}>Today</Text>
         <View style={styles.navigationButtons}>
@@ -89,6 +132,7 @@ const Dashboard = () => {
           </TouchableOpacity>
         </View>
       </View>
+
       <ScrollView style={styles.scrollableSection}>
         <TouchableOpacity
           onPress={() => console.log("Card: Total Calories Goal")}
@@ -96,8 +140,10 @@ const Dashboard = () => {
           <LinearGradient colors={["#1B1A1C", "#1B1A1C"]} style={styles.card}>
             <Text style={styles.cardTitle}>Total Calories Goal</Text>
             <View style={styles.cardContent}>
-              <Text style={styles.cardLabel}>Consumed: 0 kcal</Text>
-              <Text style={styles.cardLabel}>Goal: 2000 kcal</Text>
+              <Text style={styles.cardLabel}>
+                Consumed: {totalCalories} kcal
+              </Text>
+              <Text style={styles.cardLabel}>Goal: 1500 kcal</Text>
             </View>
             <CalorieTracker />
           </LinearGradient>
@@ -107,8 +153,8 @@ const Dashboard = () => {
           <LinearGradient colors={["#1B1A1C", "#1B1A1C"]} style={styles.card}>
             <Text style={styles.cardTitle}>Calories Burnt</Text>
             <View style={styles.cardContent}>
-              <Text style={styles.cardLabel}>Steps: 150 kcal</Text>
-              <Text style={styles.cardLabel}>Exercise: 600 kcal</Text>
+              <Text style={styles.cardLabel}>Burnt: {caloriesBurned} kcal</Text>
+              <Text style={styles.cardLabel}>Goal: 200 kcal</Text>
             </View>
             <CalorieBurntTracker />
           </LinearGradient>
@@ -123,7 +169,7 @@ const Dashboard = () => {
               style={styles.smallCard}
             >
               <Text style={styles.smallCardTitle1}>Weight Monitoring</Text>
-              <Text style={styles.cardLabel}>Current: 60 kg</Text>
+              <Text style={styles.cardLabel}>Current: {weight} kg</Text>
               <Text style={styles.cardLabel}>Goal: 75 kg</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -135,7 +181,7 @@ const Dashboard = () => {
             >
               <Text style={styles.smallCardTitle}>Steps</Text>
               <Text style={styles.smallCardTitle1}>Counter</Text>
-              <Text style={styles.cardLabel}>Current: 1000 steps</Text>
+              <Text style={styles.cardLabel}>Current: 0 steps</Text>
               <Text style={styles.cardLabel}>Goal: 5000 steps</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -185,8 +231,6 @@ const styles = StyleSheet.create({
   sectionHeading: {
     position: "relative",
     bottom: -33,
-    justifyContent: "center",
-    alignItems: "center",
     textAlign: "center",
     fontSize: 24,
     fontWeight: "bold",
@@ -209,6 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 16,
     marginBottom: 16,
+    backgroundColor: "#1B1A1C",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -233,14 +278,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  row1: {
-    flexDirection: "row",
-    justifyContent: "space-evenly",
-  },
   smallCard: {
     borderRadius: 10,
     padding: 16,
     width: (SCREEN_WIDTH - 48) / 2,
+    backgroundColor: "#1B1A1C",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
